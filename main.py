@@ -6,9 +6,7 @@ from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import Model
 from scipy.spatial.distance import cosine
-
-# check whether gpu is used
-
+from sklearn.metrics import mutual_info_score
 
 
 # Function to calculate SSIM
@@ -89,9 +87,20 @@ def calculate_orb_similarity(imageA, imageB):
     similarity = len(matches) / max(len(keypointsA), len(keypointsB))
     return similarity
 
+# Function to calculate mutual information similarity
+def calculate_mutual_information(imageA, imageB):
+    # Convert images to grayscale
+    grayA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+    grayB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+    
+    # Calculate the mutual information
+    hist_2d, _, _ = np.histogram2d(grayA.ravel(), grayB.ravel(), bins=20)
+    mi = mutual_info_score(None, None, contingency=hist_2d)
+    return mi
+
 # Load sample images
 path_a="images/128/1.jpg"
-path_b="images/128/3.jpg"
+path_b="images/128/1.jpg"
 
 imageA = cv2.imread(path_a)
 imageB = cv2.imread(path_b)
@@ -109,8 +118,11 @@ histogram_similarity = calculate_histogram_similarity(imageA, imageB)
 # Calculate ORB similarity
 orb_similarity = calculate_orb_similarity(imageA, imageB)
 
+# Calculate mutual information similarity
+mutual_information_similarity = calculate_mutual_information(imageA, imageB)
 
 print(f"SSIM score: {ssim_score}")
 print(f"Feature-based similarity (Cosine similarity): {feature_similarity}")
 print(f"Histogram similarity: {histogram_similarity}")
 print(f"ORB similarity: {orb_similarity}")
+print(f"Mutual Information similarity: {mutual_information_similarity}")
